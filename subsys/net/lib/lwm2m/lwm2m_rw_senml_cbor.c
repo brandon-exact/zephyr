@@ -65,10 +65,12 @@ struct cbor_in_fmt_data {
 };
 
 /* Statically allocated formatter data is shared between different threads */
-static union cbor_io_fmt_data{
+union cbor_io_fmt_data{
 	struct cbor_in_fmt_data i;
 	struct cbor_out_fmt_data o;
-} fdio;
+};
+
+static __attribute__ ((section (".ext_ram.bss"))) union cbor_io_fmt_data fdio;
 
 static int path_to_string(char *buf, size_t buf_size, const struct lwm2m_obj_path *input,
 			 int level_max);

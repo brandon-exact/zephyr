@@ -82,8 +82,8 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 /* Resources */
 
 /* Shared set of in-flight LwM2M messages */
-static struct lwm2m_message messages[CONFIG_LWM2M_ENGINE_MAX_MESSAGES];
-static struct lwm2m_block_context block1_contexts[NUM_BLOCK1_CONTEXT];
+static __attribute__ ((section (".ext_ram.bss"))) struct lwm2m_message messages[CONFIG_LWM2M_ENGINE_MAX_MESSAGES];
+static __attribute__ ((section (".ext_ram.bss"))) struct lwm2m_block_context block1_contexts[NUM_BLOCK1_CONTEXT];
 static struct lwm2m_message *ongoing_block2_tx;
 
 #if defined(CONFIG_LWM2M_COAP_BLOCK_TRANSFER)

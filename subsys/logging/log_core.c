@@ -120,7 +120,7 @@ static STRUCT_SECTION_ITERABLE_ALTERNATE(log_mpsc_pbuf, mpsc_pbuf_buffer, log_bu
 static struct mpsc_pbuf_buffer *curr_log_buffer;
 
 #ifdef CONFIG_MPSC_PBUF
-static uint32_t __aligned(Z_LOG_MSG_ALIGNMENT)
+static __attribute__ ((section (".ext_ram.bss"))) uint32_t __aligned(Z_LOG_MSG_ALIGNMENT)
 	buf32[CONFIG_LOG_BUFFER_SIZE / sizeof(int)];
 
 static void z_log_notify_drop(const struct mpsc_pbuf_buffer *buffer,
