@@ -12,6 +12,24 @@
 #include <zephyr/zbus/zbus.h>
 LOG_MODULE_REGISTER(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
+#if 1
+static atomic_t counter = ATOMIC_INIT(0);
+#define PURPLE "\x1B[35m"
+int zbus_msg_increment(void)
+{
+	return atomic_add(&counter, 1) + 1;
+}
+int zbus_msg_decrement(void)
+{
+	return atomic_sub(&counter, 1) - 1;
+}
+#define LOG_ZBUS_INC() LOG_INF(PURPLE "%d messages to be processesd", zbus_msg_increment());
+#define LOG_ZBUS_DEC() LOG_INF(PURPLE "%d messages to be processesd", zbus_msg_decrement());
+#else
+#define LOG_ZBUS_INC()
+#define LOG_ZBUS_DEC()
+#endif
+
 #if defined(CONFIG_ZBUS_PRIORITY_BOOST)
 /* Available only when the priority boost is enabled */
 static struct k_spinlock _zbus_chan_slock;
@@ -86,6 +104,7 @@ static inline int _zbus_notify_observer(const struct zbus_channel *chan,
 	switch (obs->type) {
 	case ZBUS_OBSERVER_LISTENER_TYPE: {
 		obs->callback(chan);
+		LOG_ZBUS_DEC();
 		break;
 	}
 	case ZBUS_OBSERVER_SUBSCRIBER_TYPE: {
@@ -155,6 +174,7 @@ static inline int _zbus_vded_exec(const struct zbus_channel *chan, k_timepoint_t
 
 		err = _zbus_notify_observer(chan, obs, end_time, buf);
 
+		LOG_ZBUS_INC();
 		if (err) {
 			last_error = err;
 			LOG_ERR("could not deliver notification to observer %s. Error code %d",
@@ -476,6 +496,7 @@ int zbus_sub_wait_msg(const struct zbus_observer *sub, const struct zbus_channel
 	*chan = *((struct zbus_channel **)net_buf_user_data(buf));
 
 	memcpy(msg, net_buf_remove_mem(buf, zbus_chan_msg_size(*chan)), zbus_chan_msg_size(*chan));
+	LOG_ZBUS_DEC();
 
 	net_buf_unref(buf);
 
